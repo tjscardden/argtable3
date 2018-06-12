@@ -31,8 +31,9 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(argtable3)
 
-option(argtable3_build_tests "Build argtable3 unit tests." ON)
-option(argtable3_build_examples "Build argtable3 examples." ON)
+option(argtable3_build_tests "Build argtable3 unit tests." OFF)
+option(argtable3_build_examples "Build argtable3 examples." OFF)
+option(argtable3_build_static_lib "Build static libargtable3" OFF)
 
 if(argtable3_build_tests)
   add_subdirectory(tests)
@@ -41,3 +42,35 @@ endif()
 if(argtable3_build_examples)
   add_subdirectory(examples)
 endif()
+
+set (warning_flags "-Wall -pedantic")
+set (c_language_flags "-std=gnu11 -g")
+set (cxx_language_flags "-std=c++11 -g")
+set (CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${warning_flags} ${c_language_flags}" )
+set (CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${warning_flags} ${cxx_language_flags}" )
+
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+
+set(ARGTABLE_SRC
+    argtable3.c)
+
+set(ARGTABLE_HDR
+    argtable3.h)
+
+source_group("Headers" FILES ${ARGTABLE_HDR})
+source_group("Source" FILES ${ARGTABLE_SRC})
+
+if (argtable3_build_static_lib)
+    add_library(argtable STATIC ${ARGTABLE_SRC})
+    target_link_libraries(argtable :libdl.so)
+    install(TARGETS argtable DESTINATION lib)
+endif()
+
+# Install headers.
+install(FILES ${ARGTABLE_HDR} DESTINATION include)
+
+# And copy headers to build dir.
+configure_file(argtable3.h ${PROJECT_BINARY_DIR}/include/argtable3.h COPYONLY)
+include_directories("${PROJECT_BINARY_DIR}/include/")
+
